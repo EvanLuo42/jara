@@ -8,11 +8,12 @@ pub(crate) struct Versions {
     pub(crate) versions: Vec<Version>
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, Eq, PartialEq)]
 pub(crate) struct Version {
     pub(crate) build: Build,
     pub(crate) version: String,
-    pub(crate) arch: Arch
+    pub(crate) arch: Arch,
+    pub(crate) path: String
 }
 
 #[derive(Eq, PartialEq, Debug, Copy, Clone, Deserialize, Serialize)]
@@ -25,7 +26,7 @@ impl FromStr for Build {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "Azul Systems, Inc." => Ok(Build::Zulu),
+            "Azul Systems, Inc." | "zulu" => Ok(Build::Zulu),
             _ => Err(JaraErrors::UnsupportedBuild)
         }
     }
@@ -49,8 +50,8 @@ impl FromStr for Arch {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "aarch64" => Ok(Arch::Arm64),
-            _ => Err(JaraErrors::UnsupportedBuild)
+            "aarch64" | "arm64" => Ok(Arch::Arm64),
+            _ => Err(JaraErrors::UnsupportedArch)
         }
     }
 }

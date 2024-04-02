@@ -19,6 +19,10 @@ impl JaraError {
     }
 }
 
+pub(crate) fn map_other_errors(error: impl Error) -> JaraErrors {
+    JaraErrors::Other { message: error.to_string() }
+}
+
 #[derive(Debug)]
 pub(crate) enum JaraErrors {
     InvalidJDK,
@@ -27,6 +31,7 @@ pub(crate) enum JaraErrors {
     UnsupportedBuild,
     UnsupportedArch,
     VersionConflict,
+    VersionNotFound,
     Other { message: String }
 }
 
@@ -49,7 +54,10 @@ impl JaraErrors {
                 ErrorKind::Io, "Unsupported build.".into()
             ),
             JaraErrors::VersionConflict => JaraError::new(
-                ErrorKind::Io, "Version conflict.".into()
+                ErrorKind::ValueValidation, "Version conflict.".into()
+            ),
+            JaraErrors::VersionNotFound => JaraError::new(
+                ErrorKind::ValueValidation, "Version not found.".into()
             ),
             JaraErrors::Other { message } => JaraError::new(
                 ErrorKind::Io, message.clone()

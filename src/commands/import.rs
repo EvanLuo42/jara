@@ -1,12 +1,12 @@
 use std::io::ErrorKind;
+
 use colored::Colorize;
-use simple_home_dir::home_dir;
+use tokio::fs::File;
+use tokio::io::{AsyncBufReadExt, BufReader};
 
-use tokio::fs::{File, OpenOptions};
-use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader, BufWriter};
-
+use crate::commands::{read_versions_file, write_versions_file};
 use crate::errors::{JaraErrors, JaraResult};
-use crate::protos::versions::{Arch, Build, Version, Versions};
+use crate::protos::versions::Version;
 
 pub(crate) async fn import(path: String) -> JaraResult<()> {
     println!("{} {}/release", "Reading".green().bold(), path);
@@ -41,68 +41,29 @@ pub(crate) async fn import(path: String) -> JaraResult<()> {
         maps.push(map);
     }
 
-    let mut versions_file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(format!("{}/.jara/versions", home_dir().unwrap().display()))
-        .await
-        .map_err(|err| match err.kind() {
-            ErrorKind::PermissionDenied => JaraErrors::PermissionDenied,
-            ErrorKind::NotFound => JaraErrors::VersionsFileNotFound,
-            kind => JaraErrors::Other { message: kind.to_string() }
-        })?;
+    let mut versions = read_versions_file().await?;
 
-    let mut content = String::new();
-    BufReader::new(&mut versions_file)
-        .read_to_string(&mut content)
-        .await
-        .map_err(|err| JaraErrors::Other { message: err.to_string() })?;
-    let mut versions: Versions = if content.is_empty() {
-        Versions {
-            versions: Vec::new()
-        }
-    } else {
-        toml::from_str(content.as_str())
-            .map_err(|err| JaraErrors::Other { message: err.to_string() })?
-    };
-
-    let try_find_version = maps
+    let version = maps
         .iter()
-        .find(|map| map.0 == String::from("JAVA_VERSION"));
-    if let None = try_find_version {
-        return Err(JaraErrors::InvalidJDK)
-    }
-    let version = try_find_version
-        .unwrap()
-        .clone()
+        .find(|map| map.0 == String::from("JAVA_VERSION"))
+        .ok_or(JaraErrors::InvalidJDK)?
         .1
         .replace("\"", "");
     println!("{}: {}", "Version".green().bold(), version);
 
-    let try_find_build = maps
+    let build = maps
         .iter()
-        .find(|map| map.0 == String::from("IMPLEMENTOR"));
-    if let None = try_find_build {
-        return Err(JaraErrors::InvalidJDK)
-    }
-    let build: Build = try_find_build
-        .unwrap()
-        .clone()
+        .find(|map| map.0 == String::from("IMPLEMENTOR"))
+        .ok_or(JaraErrors::InvalidJDK)?
         .1
         .replace("\"", "")
         .parse()?;
     println!("{}: {}", "Build".green().bold(), build);
 
-    let try_find_arch = maps
+    let arch = maps
         .iter()
-        .find(|map| map.0 == String::from("OS_ARCH"));
-    if let None = try_find_arch {
-        return Err(JaraErrors::InvalidJDK)
-    }
-    let arch: Arch = try_find_arch
-        .unwrap()
-        .clone()
+        .find(|map| map.0 == String::from("OS_ARCH"))
+        .ok_or(JaraErrors::InvalidJDK)?
         .1
         .replace("\"", "")
         .parse()?;
@@ -112,28 +73,18 @@ pub(crate) async fn import(path: String) -> JaraResult<()> {
         build,
         version,
         arch,
+        path,
     };
-    if versions.versions.iter().find(|version|
-        version.build == build && version.arch == arch
-            && version.version.eq(&version.version)
-    ).is_some() {
+    if versions
+        .versions
+        .iter()
+        .any(|_version| *_version == version) {
         return Err(JaraErrors::VersionConflict)
-    }
+    };
 
     versions.versions.push(version);
 
-    let serialized_versions = toml::to_string(&versions).map_err(|err|
-        JaraErrors::Other { message: err.to_string() }
-    )?;
-
-    let mut writer = BufWriter::new(versions_file);
-    writer.write(serialized_versions.as_bytes()).await.map_err(|err|
-        JaraErrors::Other { message: err.to_string() }
-    )?;
-    writer.flush().await.map_err(|err|
-        JaraErrors::Other { message: err.to_string() }
-    )?;
-    println!("{}", "Successfully imported version!".green().bold());
+    write_versions_file(versions).await?;
 
     Ok(())
 }
