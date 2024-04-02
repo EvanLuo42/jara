@@ -1,8 +1,11 @@
 use clap::{CommandFactory, Parser, Subcommand};
+use simple_home_dir::home_dir;
+use tokio::fs;
 
 use crate::commands::import::import;
 use crate::commands::install::install;
 use crate::commands::set::set;
+use crate::errors::JaraErrors;
 
 mod commands;
 mod errors;
@@ -10,6 +13,10 @@ mod protos;
 
 #[tokio::main]
 async fn main() {
+    fs::create_dir_all(format!("{}/.jara", home_dir().unwrap().display())).await.unwrap_or_else(|err| {
+        let error = JaraErrors::Other { message: err.to_string() };
+        Args::command().error(error.error().kind, error.error().message).exit()
+    });
     let args = Args::parse();
     match args.commands {
         Commands::Install { build, arch, version } => install(build, arch, version).await,

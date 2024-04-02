@@ -13,3 +13,5 @@ reqwest = { version = "0.12.2", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 toml = "0.8.12"
 serde = { version = "1.0.193", features = ["derive"] }
+colored = "2.1.0"
+simple-home-dir = "0.3.2"
