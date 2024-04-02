@@ -2,8 +2,13 @@
 name = "jara"
 version = "0.1.0"
 edition = "2021"
-authors = ["EvanLuo42"]
-description = "A Java Runtime Manager"
+authors = ["EvanLuo42 <knacks.insects_0o@icloud.com>"]
+license = "GPL-3"
+readme = "README.md"
+homepage = "https://github.com/EvanLuo42/jara"
+repository = "https://github.com/EvanLuo42/jara"
+keywords = ["java", "manager", "cli", "clap", "tokio"]
+description = "A Java Runtime Manager."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
