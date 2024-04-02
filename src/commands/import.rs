@@ -43,30 +43,13 @@ pub(crate) async fn import(path: String) -> JaraResult<()> {
 
     let mut versions = read_versions_file().await?;
 
-    let version = maps
-        .iter()
-        .find(|map| map.0 == String::from("JAVA_VERSION"))
-        .ok_or(JaraErrors::InvalidJDK)?
-        .1
-        .replace("\"", "");
+    let version = get_value_from_vec(&maps, "JAVA_VERSION")?;
     println!("{}: {}", "Version".green().bold(), version);
 
-    let build = maps
-        .iter()
-        .find(|map| map.0 == String::from("IMPLEMENTOR"))
-        .ok_or(JaraErrors::InvalidJDK)?
-        .1
-        .replace("\"", "")
-        .parse()?;
+    let build = get_value_from_vec(&maps, "IMPLEMENTOR")?.parse()?;
     println!("{}: {}", "Build".green().bold(), build);
 
-    let arch = maps
-        .iter()
-        .find(|map| map.0 == String::from("OS_ARCH"))
-        .ok_or(JaraErrors::InvalidJDK)?
-        .1
-        .replace("\"", "")
-        .parse()?;
+    let arch = get_value_from_vec(&maps, "OS_ARCH")?.parse()?;
     println!("{}: {}", "Arch".green().bold(), arch);
 
     let version = Version {
@@ -75,10 +58,7 @@ pub(crate) async fn import(path: String) -> JaraResult<()> {
         arch,
         path,
     };
-    if versions
-        .versions
-        .iter()
-        .any(|_version| *_version == version) {
+    if versions.versions.iter().any(|_version| *_version == version) {
         return Err(JaraErrors::VersionConflict)
     };
 
@@ -87,4 +67,15 @@ pub(crate) async fn import(path: String) -> JaraResult<()> {
     write_versions_file(versions).await?;
 
     Ok(())
+}
+
+fn get_value_from_vec(maps: &Vec<(String, String)>, key: &str) -> Result<String, JaraErrors> {
+    Ok(
+        maps
+            .iter()
+            .find(|map| map.0 == String::from(key))
+            .ok_or(JaraErrors::InvalidJDK)?
+            .1
+            .replace("\"", "")
+    )
 }
