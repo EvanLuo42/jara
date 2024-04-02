@@ -1,8 +1,10 @@
 use std::io::ErrorKind;
+
 use colored::Colorize;
 use simple_home_dir::home_dir;
-use tokio::fs::{File, OpenOptions};
+use tokio::fs::OpenOptions;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader, BufWriter};
+
 use crate::errors::JaraErrors;
 use crate::protos::versions::Versions;
 
@@ -12,11 +14,14 @@ pub(crate) mod import;
 pub(crate) mod versions;
 
 pub(crate) async fn read_versions_file() -> Result<Versions, JaraErrors> {
-    let mut versions_file = File::open(format!("{}/.jara/versions.toml", home_dir().unwrap().display()))
+    let mut versions_file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .read(true)
+        .open(format!("{}/.jara/versions.toml", home_dir().unwrap().display()))
         .await
         .map_err(|err| match err.kind() {
             ErrorKind::PermissionDenied => JaraErrors::PermissionDenied,
-            ErrorKind::NotFound => JaraErrors::VersionsFileNotFound,
             kind => JaraErrors::Other { message: kind.to_string() }
         })?;
 
