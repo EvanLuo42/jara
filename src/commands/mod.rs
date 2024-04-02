@@ -9,9 +9,10 @@ use crate::protos::versions::Versions;
 pub(crate) mod install;
 pub(crate) mod set;
 pub(crate) mod import;
+pub(crate) mod versions;
 
 pub(crate) async fn read_versions_file() -> Result<Versions, JaraErrors> {
-    let mut versions_file = File::open(format!("{}/.jara/versions", home_dir().unwrap().display()))
+    let mut versions_file = File::open(format!("{}/.jara/versions.toml", home_dir().unwrap().display()))
         .await
         .map_err(|err| match err.kind() {
             ErrorKind::PermissionDenied => JaraErrors::PermissionDenied,
@@ -38,7 +39,7 @@ pub(crate) async fn write_versions_file(versions: Versions) -> Result<(), JaraEr
     let versions_file = OpenOptions::new()
         .write(true)
         .create(true)
-        .open(format!("{}/.jara/versions", home_dir().unwrap().display()))
+        .open(format!("{}/.jara/versions.toml", home_dir().unwrap().display()))
         .await
         .map_err(|err| match err.kind() {
             ErrorKind::PermissionDenied => JaraErrors::PermissionDenied,

@@ -5,6 +5,7 @@ use tokio::fs;
 use crate::commands::import::import;
 use crate::commands::install::install;
 use crate::commands::set::set;
+use crate::commands::versions::versions;
 use crate::errors::JaraErrors;
 
 mod commands;
@@ -21,7 +22,8 @@ async fn main() {
     match args.commands {
         Commands::Install { build, arch, version } => install(build, arch, version).await,
         Commands::Set { build, arch, version } => set(build, arch, version).await,
-        Commands::Import { path } => import(path).await
+        Commands::Import { path } => import(path).await,
+        Commands::Versions => versions().await
     }.unwrap_or_else(|err|
         Args::command().error(err.error().kind, err.error().message).exit()
     );
@@ -57,5 +59,7 @@ pub(crate) enum Commands {
     /// Import JDK
     Import {
         path: String
-    }
+    },
+    /// List all imported & installed versions
+    Versions
 }
