@@ -26,14 +26,13 @@ pub(crate) async fn import(path: String) -> JaraResult<()> {
         if !line.contains("=") {
             continue;
         }
-        let key_value = line.split("=").collect::<Vec<&str>>();
+        let key_value = line
+            .split("=")
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>();
         if key_value.len() != 2 {
             continue;
         }
-        let key_value: Vec<String> = key_value
-            .iter()
-            .map(|x| x.to_string())
-            .collect();
         let map = (
             key_value.get(0).unwrap().clone(),
             key_value.get(1).unwrap().clone()
@@ -69,7 +68,7 @@ pub(crate) async fn import(path: String) -> JaraResult<()> {
     Ok(())
 }
 
-fn get_value_from_vec(maps: &Vec<(String, String)>, key: &str) -> Result<String, JaraErrors> {
+fn get_value_from_vec(maps: &Vec<(String, String)>, key: &str) -> JaraResult<String> {
     Ok(
         maps
             .iter()

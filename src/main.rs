@@ -14,18 +14,23 @@ mod protos;
 
 #[tokio::main]
 async fn main() {
-    fs::create_dir_all(format!("{}/.jara", home_dir().unwrap().display())).await.unwrap_or_else(|err| {
-        let error = JaraErrors::Other { message: err.to_string() };
-        Args::command().error(error.error().kind, error.error().message).exit()
-    });
+    fs::create_dir_all(format!("{}/.jara", home_dir().unwrap().display())).await
+        .unwrap_or_else(|err| {
+            let error = JaraErrors::Other { message: err.to_string() };
+            Args::command().error(error.error().kind, error.error().message).exit()
+        });
     let args = Args::parse();
     match args.commands {
-        Commands::Install { build, arch, version } => install(build, arch, version).await,
-        Commands::Set { build, arch, version } => set(build, arch, version).await,
+        Commands::Install { build, arch, version } =>
+            install(build, arch, version).await,
+        Commands::Set { build, arch, version } =>
+            set(build, arch, version).await,
         Commands::Import { path } => import(path).await,
         Commands::Versions => versions().await
     }.unwrap_or_else(|err|
-        Args::command().error(err.error().kind, err.error().message).exit()
+        Args::command()
+            .error(err.error().kind, err.error().message)
+            .exit()
     );
 }
 

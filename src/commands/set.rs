@@ -3,7 +3,6 @@ use tokio::fs::{remove_file, symlink};
 
 use crate::commands::read_versions_file;
 use crate::errors::{JaraErrors, JaraResult, map_other_errors};
-use crate::protos::versions::Version;
 
 pub(crate) async fn set(
     build: String,
@@ -12,19 +11,14 @@ pub(crate) async fn set(
 ) -> JaraResult<()> {
     let versions = read_versions_file().await?;
 
-    let expect_version = Version {
-        build: build.parse()?,
-        arch: arch.parse()?,
-        version,
-        path: String::new()
-    };
-
+    let expected_build = build.parse()?;
+    let expected_arch = arch.parse()?;
     let version = versions.versions
         .iter()
         .find(|_version|
-            _version.version == expect_version.version &&
-                _version.build == expect_version.build &&
-                _version.arch == expect_version.arch
+            _version.version == version &&
+                _version.build == expected_build &&
+                _version.arch == expected_arch
         )
         .ok_or(JaraErrors::VersionNotFound)?;
 
