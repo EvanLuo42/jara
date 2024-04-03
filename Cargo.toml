@@ -8,6 +8,7 @@ readme = "README.md"
 homepage = "https://github.com/EvanLuo42/jara"
 repository = "https://github.com/EvanLuo42/jara"
 keywords = ["java", "manager", "cli", "clap", "tokio"]
+categories = ["command-line-interface", "development-tools"]
 description = "A Java Runtime Manager."
 
 [profile.release]
