@@ -1,5 +1,13 @@
 # Jara
 
+## Installation
+Install cargo and run:
+```bash
+cargo install jara
+```
+
+## Usage
+
 ```
 Usage: jara <COMMAND>
 
@@ -15,7 +23,7 @@ Options:
   -V, --version  Print version
 ```
 
-## Set Current JDK
+### Set Current JDK
 ```
 Set current JDK
 
@@ -30,7 +38,7 @@ Options:
   -h, --help  Print help
 ```
 
-## Import JDK
+### Import JDK
 ```
 Import JDK
 
@@ -43,7 +51,7 @@ Options:
   -h, --help  Print help
 ```
 
-## List All Imported & Installed Versions
+### List All Imported & Installed Versions
 ```
 List all imported & installed versions
 
