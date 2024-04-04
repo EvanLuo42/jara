@@ -36,8 +36,8 @@ pub(crate) async fn read_versions_file() -> Result<Versions, JaraErrors> {
         })
     }
 
-    Ok(toml::from_str(content.as_str())
-        .map_err(|err| JaraErrors::Other { message: err.to_string() })?)
+    toml::from_str(content.as_str())
+        .map_err(|err| JaraErrors::Other { message: err.to_string() })
 }
 
 pub(crate) async fn write_versions_file(versions: Versions) -> Result<(), JaraErrors> {

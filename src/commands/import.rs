@@ -23,18 +23,18 @@ pub(crate) async fn import(path: String) -> JaraResult<()> {
     while let Some(line) = lines.next_line().await.map_err(|err|
         JaraErrors::Other { message: err.to_string() }
     )? {
-        if !line.contains("=") {
+        if !line.contains('=') {
             continue;
         }
         let key_value = line
-            .split("=")
+            .split('=')
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
         if key_value.len() != 2 {
             continue;
         }
         let map = (
-            key_value.get(0).unwrap().clone(),
+            key_value.first().unwrap().clone(),
             key_value.get(1).unwrap().clone()
         );
         maps.push(map);
@@ -68,13 +68,13 @@ pub(crate) async fn import(path: String) -> JaraResult<()> {
     Ok(())
 }
 
-fn get_value_from_vec(maps: &Vec<(String, String)>, key: &str) -> JaraResult<String> {
+fn get_value_from_vec(maps: &[(String, String)], key: &str) -> JaraResult<String> {
     Ok(
         maps
             .iter()
-            .find(|map| map.0 == String::from(key))
+            .find(|map| map.0 == *key)
             .ok_or(JaraErrors::InvalidJDK)?
             .1
-            .replace("\"", "")
+            .replace('"', "")
     )
 }
