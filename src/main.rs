@@ -11,6 +11,7 @@ use crate::errors::JaraErrors;
 mod commands;
 mod errors;
 mod protos;
+mod api;
 
 #[tokio::main]
 async fn main() {

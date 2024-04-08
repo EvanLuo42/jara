@@ -5,7 +5,7 @@ use simple_home_dir::home_dir;
 use tokio::fs::OpenOptions;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader, BufWriter};
 
-use crate::errors::JaraErrors;
+use crate::errors::{JaraErrors, JaraResult};
 use crate::protos::versions::Versions;
 
 pub(crate) mod install;
@@ -13,7 +13,7 @@ pub(crate) mod set;
 pub(crate) mod import;
 pub(crate) mod versions;
 
-pub(crate) async fn read_versions_file() -> Result<Versions, JaraErrors> {
+pub(crate) async fn read_versions_file() -> JaraResult<Versions> {
     let mut versions_file = OpenOptions::new()
         .create(true)
         .write(true)
@@ -31,7 +31,7 @@ pub(crate) async fn read_versions_file() -> Result<Versions, JaraErrors> {
         .await
         .map_err(|err| JaraErrors::Other { message: err.to_string() })?;
     if content.is_empty() {
-        return Ok( Versions {
+        return Ok(Versions {
             versions: Vec::new()
         })
     }
@@ -40,7 +40,7 @@ pub(crate) async fn read_versions_file() -> Result<Versions, JaraErrors> {
         .map_err(|err| JaraErrors::Other { message: err.to_string() })
 }
 
-pub(crate) async fn write_versions_file(versions: Versions) -> Result<(), JaraErrors> {
+pub(crate) async fn write_versions_file(versions: Versions) -> JaraResult<()> {
     let versions_file = OpenOptions::new()
         .write(true)
         .create(true)
